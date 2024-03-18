@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- <link rel="stylesheet" href="./w3.css " /> -->
+  <style type="text/css">
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    #wrapper {
+      position: relative;
+      background-color: gray;
+      min-height: 100%;
+    }
+
+    .slides {
+      position: absolute;
+      text-align: center;
+      height: 100%;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 3s;
+    }
+
+    .title {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      font-family: Verdana, Helvetica, sans-serif;
+      font-size: 2.5em;
+      font-weight: bolder;
+      padding: 8px 32px;
+      color: #fff;
+      -webkit-text-stroke: 2px black
+    }
+
+    img {
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+    }
+  </style>
+
+  <script type="text/javascript" src="./fileList.js"></script>
+  <script>
+    var currIdx = 0;
+    var slideIdx = 0;
+
+    function showSlide(slide) {
+      document.getElementById(slide).style.opacity = 1;
+    }
+    function hideSlide(slide) {
+      document.getElementById(slide).style.opacity = 0;
+    }
+    function chgImgSrc(idIdx, idx) {
+      const slideDiv = document.getElementById('slide-' + idIdx);
+      slideDiv.children[0].src = data.fileList[idx].path;
+      const titleDiv = document.getElementById('title-' + idIdx);
+      const title = data.fileList[idx].title;
+      if (title) {
+        titleDiv.style.visibility = 'visible';
+        titleDiv.innerHTML = title;
+      } else {
+        titleDiv.style.visibility = 'hidden';
+      }
+    }
+    function loadImage() {
+      chgImgSrc(0, 0);
+      showSlide('slide-0');
+    }
+    function clickHandler(event) {
+      if (event.button === 0) {
+        nextImage();
+      } else if (event.button === 2) {
+        prevImage();
+      }
+    }
+    function chgImage() {
+      const nxtIdx = slideIdx === 1 ? 0 : 1;
+      chgImgSrc(nxtIdx, currIdx);
+      hideSlide('slide-' + slideIdx);
+      showSlide('slide-' + nxtIdx);
+      slideIdx = nxtIdx;
+
+    }
+    function nextImage() {
+      console.log(data.fileList.length);
+      if (currIdx < data.fileList.length - 1) {
+        currIdx++;
+        chgImage();
+      }
+    }
+    function prevImage() {
+      if (currIdx > 0) {
+        currIdx--;
+        chgImage();
+      }
+    }
+    window.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+    window.addEventListener("mouseup", clickHandler);
+  </script>
+
+  <title>Dia Show</title>
+</head>
+
+<body onload="loadImage()">
+  <div id="wrapper">
+    <div id="slide-0" class="slides">
+      <img src="" />
+      <div id="title-0" class="title">
+        Start
+      </div>
+    </div>
+    <div id="slide-1" class="slides">
+      <img src="" />
+      <div id="title-1" class="title">
+        Ende
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
