@@ -12,6 +12,9 @@ from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
+    QInputDialog,
+    QTabWidget,
+    QWidget,
     QFileDialog,
     QStatusBar,
     QLabel,
@@ -35,11 +38,19 @@ class MainWindow(QMainWindow):
         self.resize(900, rect.height() - (titleBarHeight * 2))
 
         # Action add images
-        add_image_action = QAction(
+        self.add_image_action = QAction(
             QIcon("plus.png"), "Bilder hinzufügen", self)
-        add_image_action.setToolTip(
+        self.add_image_action.setToolTip(
             "Bilder für Diashow hinzufügen")
-        add_image_action.triggered.connect(self.addImages)
+        self.add_image_action.triggered.connect(self.addImages)
+
+        # Action edit title
+        self.edit_title_action = QAction(
+            QIcon("icons8-bearbeiten-30.png"), "Titel ändern", self)
+        self.edit_title_action.setToolTip(
+            "Titel des Bildes ändern")
+        self.edit_title_action.triggered.connect(self.editTitle)
+        self.edit_title_action.setDisabled(True)
 
         # Action save
         self.save_action = QAction(
@@ -70,7 +81,8 @@ class MainWindow(QMainWindow):
         toolbar = self.addToolBar("Toolbar")
         toolbar.setIconSize(QSize(32, 32))
         toolbar.setMovable(False)
-        toolbar.addAction(add_image_action)
+        toolbar.addAction(self.add_image_action)
+        toolbar.addAction(self.edit_title_action)
         toolbar.addAction(self.save_action)
 
         self.statusBar = QStatusBar(self)
@@ -82,11 +94,25 @@ class MainWindow(QMainWindow):
 
         self.show()
 
+        # Create a tab widget
+        self.tab_widget = QTabWidget(self)
+
+        # Create image tab
         self.scrollArea = ScrollAreaImages(self)
-        self.setCentralWidget(self.scrollArea)
         self.scrollArea.insertImagesList(
             self.atImage, self.controlData["fileList"])
         self.atImage = len(self.controlData["fileList"]) + 1
+
+        self.musicTab = QWidget()
+
+        # Add tabs to the tab widget
+        self.tab_widget.addTab(self.scrollArea, "Bilder")
+        self.tab_widget.addTab(self.musicTab, "Musik")
+
+        # Set the tab widget as the central widget of the main window
+        self.setCentralWidget(self.tab_widget)
+        # Connect the currentChanged signal to a slot
+        self.tab_widget.currentChanged.connect(self.on_tab_changed)
 
         self.isInit = False
 
@@ -103,12 +129,41 @@ class MainWindow(QMainWindow):
                 f"{len(newFiles['fileList'])} Bilder hinzugefügt")
             self.atImage = self.atImage + len(newFiles["fileList"])
 
+    def editTitle(self):
+        currentTitle = self.controlData["fileList"][self.atImage - 1]["title"]
+
+        editDlg = QInputDialog(self)
+        editDlg.setInputMode(QInputDialog.InputMode.TextInput)
+        editDlg.setLabelText("Titel ändern:")
+        editDlg.setTextValue(currentTitle)
+
+        if editDlg.exec() == 1:
+            newTitle = editDlg.textValue()
+            self.controlData["fileList"][self.atImage - 1]["title"] = newTitle
+            self.scrollArea.updateTitle(self.atImage, newTitle)
+            self.setWindowModified(True)
+            self.save_action.setEnabled(True)
+            self.statusBar.showMessage(
+                f"Titel geändert: {newTitle}")
+
     def saveControlFile(self):
         saveControlFile(self.controlFilename, self.controlData)
         self.setWindowModified(False)
         self.save_action.setDisabled(True)
         self.statusBar.showMessage(
             f"Steuerdatei: {self.controlFilename} gespeichert")
+
+    def on_tab_changed(self, index):
+        if index == 0:
+            self.add_image_action.setText("Bilder hinzufügen")
+            self.add_image_action.setEnabled(True)
+            self.add_image_action.setToolTip(
+                "Bilder für Diashow hinzufügen")
+        else:
+            self.add_image_action.setText("Musik hinzufügen")
+            self.add_image_action.setDisabled(True)
+            self.add_image_action.setToolTip(
+                "Musik für Diashow hinzufügen")
 
     def closeEvent(self, event):
         if self.isWindowModified():

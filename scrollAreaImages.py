@@ -11,4 +11,7 @@ class ScrollAreaImages(QScrollArea):
 
     def insertImagesList(self, atItem, fileList):
         self.imagesList.insertImagesList(atItem, fileList)
+
+    def updateTitle(self, atItem, newTitle):
+        self.imagesList.updateTitle(atItem, newTitle)
 # End of ScrollAreaImages

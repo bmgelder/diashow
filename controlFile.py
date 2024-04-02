@@ -9,7 +9,7 @@ def openCreateControlFile(path):
     except ValueError as e:
         print(f'Error decoding JSON: {e}')
     except FileNotFoundError as e:
-        controlData = {"fileList": []}
+        controlData = {"fileList": [], "musicList": [], }
         with open(path, "x") as jsonFile:
             jsonFile.write(
                 "data = " + json5.dumps(controlData, indent=2) + ";")

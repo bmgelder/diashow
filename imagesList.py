@@ -31,12 +31,14 @@ class ClickableWidget(QWidget):
                 # No Image selected: Append to the end of the list
                 self.mainWindow.atImage = len(
                     self.mainWindow.controlData["fileList"]) + 1
+                self.mainWindow.edit_title_action.setDisabled(True)
                 self.setPalette(palette)
                 return
 
             # Set image selected
             palette.setColor(self.backgroundRole(),
                              QColor(QColorConstants.LightGray))
+            self.mainWindow.edit_title_action.setEnabled(True)
             self.setPalette(palette)
 
             # Reset background color of the previous selected image if any
@@ -135,5 +137,9 @@ class ImagesList(QWidget):
             self.verticalLayout.itemAt(i).layout().itemAt(
                 0).widget().layout().itemAt(0).layout().itemAt(0).widget().setText(f"Bildnr. {i + 1}")
             QApplication.processEvents()
+
+    def updateTitle(self, atItem, newTitle):
+        self.verticalLayout.itemAt(atItem - 1).layout().itemAt(
+            0).widget().layout().itemAt(0).layout().itemAt(2).widget().setText(newTitle)
 
 # End of ImagesList
