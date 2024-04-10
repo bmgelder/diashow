@@ -20,14 +20,14 @@ class ClickableWidget(QWidget):
 
         self.setEnabled(True)   # Enable mouse events
         self.setAutoFillBackground(True)
+        self.bkgColor = self.palette().color(self.backgroundRole())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             palette = self.palette()
             # Toggle background color
             if palette.color(self.backgroundRole()) == QColorConstants.LightGray:
-                palette.setColor(self.backgroundRole(),
-                                 QColor(QColorConstants.White))
+                palette.setColor(self.backgroundRole(), self.bkgColor)
                 # No Image selected: Append to the end of the list
                 self.mainWindow.atImage = len(
                     self.mainWindow.controlData["fileList"]) + 1
@@ -46,8 +46,7 @@ class ClickableWidget(QWidget):
                 oldWiget = self.imagesList.verticalLayout.itemAt(
                     self.mainWindow.atImage - 1).layout().itemAt(0).widget()
                 oldPalette = oldWiget.palette()
-                oldPalette.setColor(oldWiget.backgroundRole(),
-                                    QColor(QColorConstants.White))
+                oldPalette.setColor(oldWiget.backgroundRole(), self.bkgColor)
                 oldWiget.setPalette(oldPalette)
 
             itemNumber = re.search(r'\d+',

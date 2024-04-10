@@ -5,6 +5,7 @@ import os
 from controlFile import openCreateControlFile, saveControlFile
 from images import createFileList
 from scrollAreaImages import ScrollAreaImages
+from musicList import MusicList, createMusicList
 from cancelNextDialog import CancelNextDialog
 
 from PySide6.QtCore import Qt, QSize
@@ -42,7 +43,7 @@ class MainWindow(QMainWindow):
             QIcon("plus.png"), "Bilder hinzufügen", self)
         self.add_image_action.setToolTip(
             "Bilder für Diashow hinzufügen")
-        self.add_image_action.triggered.connect(self.addImages)
+        self.add_image_action.triggered.connect(self.add)
 
         # Action edit title
         self.edit_title_action = QAction(
@@ -103,7 +104,8 @@ class MainWindow(QMainWindow):
             self.atImage, self.controlData["fileList"])
         self.atImage = len(self.controlData["fileList"]) + 1
 
-        self.musicTab = QWidget()
+        self.musicTab = MusicList()
+        self.musicTab.insertMusicList(self.controlData["musicList"])
 
         # Add tabs to the tab widget
         self.tab_widget.addTab(self.scrollArea, "Bilder")
@@ -115,6 +117,12 @@ class MainWindow(QMainWindow):
         self.tab_widget.currentChanged.connect(self.on_tab_changed)
 
         self.isInit = False
+
+    def add(self):
+        if self.tab_widget.currentIndex() == 0:
+            self.addImages()
+        else:
+            self.addMusic()
 
     def addImages(self):
         newFiles = createFileList(self)
@@ -128,6 +136,17 @@ class MainWindow(QMainWindow):
             self.statusBar.showMessage(
                 f"{len(newFiles['fileList'])} Bilder hinzugefügt")
             self.atImage = self.atImage + len(newFiles["fileList"])
+
+    def addMusic(self):
+        newMusicList = createMusicList(self)
+        if len(newMusicList) > 0:
+            self.setWindowModified(True)
+            self.save_action.setEnabled(True)
+            self.musicTab.insertMusicList(newMusicList["musicList"])
+            self.controlData["musicList"][len(
+                self.controlData["musicList"]):] = newMusicList["musicList"]
+            self.statusBar.showMessage(
+                f"{len(newMusicList)} Musikstücke hinzugefügt")
 
     def editTitle(self):
         currentTitle = self.controlData["fileList"][self.atImage - 1]["title"]
@@ -156,12 +175,10 @@ class MainWindow(QMainWindow):
     def on_tab_changed(self, index):
         if index == 0:
             self.add_image_action.setText("Bilder hinzufügen")
-            self.add_image_action.setEnabled(True)
             self.add_image_action.setToolTip(
                 "Bilder für Diashow hinzufügen")
         else:
             self.add_image_action.setText("Musik hinzufügen")
-            self.add_image_action.setDisabled(True)
             self.add_image_action.setToolTip(
                 "Musik für Diashow hinzufügen")
 

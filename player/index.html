@@ -31,7 +31,7 @@
       height: 100%;
       width: 100%;
       opacity: 0;
-      transition: opacity 2s;
+      transition: opacity 2.5s;
     }
 
     .title {
@@ -81,6 +81,10 @@
       document.getElementById(slide).style.opacity = 0;
     }
     function chgImgSrc(idIdx, idx) {
+      console.log('chgImgSrc:', idIdx, idx);
+      if (typeof data.fileList[idx] === 'undefined') {
+        return;
+      }
       const slideDiv = document.getElementById('slide-' + idIdx);
       slideDiv.children[0].src = data.fileList[idx].path;
       const titleDiv = document.getElementById('title-' + idIdx);
@@ -94,6 +98,7 @@
     }
     function loadImage() {
       chgImgSrc(0, 0); // Show the first image
+      chgImgSrc(1, 1); // Load the second image
       showSlide('slide-0');
 
       audioPlayer = document.getElementById('audioPlayer');
@@ -112,7 +117,6 @@
       });
 
       audioPlayer.addEventListener('mouseenter', function () {
-        console.log('mouseenter');
         // Show the audio player when mouse is over
         audioPlayer.style.opacity = 1;
       });
@@ -130,7 +134,6 @@
         if (autoChangeInterval) {
           return;
         }
-        lockImgChange();
         nextImage();
       } else if (event.button === 1) {
         // toggle auto change
@@ -143,7 +146,6 @@
         if (autoChangeInterval) {
           return;
         }
-        lockImgChange();
         prevImage();
       }
     }
@@ -161,7 +163,6 @@
             return;
           }
           // previous image
-          lockImgChange();
           prevImage();
           break;
         case "ArrowUp":
@@ -177,7 +178,6 @@
             return;
           }
           // next image
-          lockImgChange();
           nextImage();
           break;
         default:
@@ -187,9 +187,11 @@
       // Cancel the default action to avoid it being handled twice
       event.preventDefault();
     }
-    function chgImage() {
-      const nxtIdx = slideIdx === 1 ? 0 : 1;
-      chgImgSrc(nxtIdx, currIdx);
+    function chgImage(step) {
+      const nxtIdx = ((slideIdx + step) % 3 + 3) % 3;
+      const nxtNxtIdx = ((nxtIdx + step) % 3 + 3) % 3;
+      console.log('currIdx:', currIdx, 'nxtIdx:', nxtIdx, 'nxtNxtIdx:', nxtNxtIdx);
+      chgImgSrc(nxtNxtIdx, currIdx + step);
       hideSlide('slide-' + slideIdx);
       showSlide('slide-' + nxtIdx);
       slideIdx = nxtIdx;
@@ -197,16 +199,18 @@
     }
     function nextImage() {
       if (currIdx < data.fileList.length - 1) {
+        lockImgChange();
         currIdx++;
-        chgImage();
+        chgImage(1);
       } else if (autoChangeInterval) {
         stopAutoChange();
       }
     }
     function prevImage() {
       if (currIdx > 0) {
+        lockImgChange();
         currIdx--;
-        chgImage();
+        chgImage(-1);
       }
     }
     function lockImgChange() {
@@ -217,14 +221,23 @@
         lockImgChg = false;
         // Remove the class to change the cursor back
         document.body.classList.remove('busy-cursor');
-      }, 1000);
+      }, 1500);
     }
     function startAutoChange() {
       // Add the class to change the cursor
       document.body.classList.add('busy-cursor');
-      nextImage();
+      currIdx++;
+      chgImage(1)
       // Change image every 4 seconds
-      autoChangeInterval = setInterval(nextImage, 4000);
+      autoChangeInterval = setInterval(
+        function() {
+          if (currIdx < data.fileList.length - 1) {
+            currIdx++;
+            chgImage(1);
+          } else if (autoChangeInterval) {
+            stopAutoChange();
+          }
+        }, 4000);
     }
     function stopAutoChange() {
       clearInterval(autoChangeInterval);
@@ -254,6 +267,12 @@
     <div id="slide-1" class="slides">
       <img src="" />
       <div id="title-1" class="title">
+        Bild 1
+      </div>
+    </div>
+    <div id="slide-2" class="slides">
+      <img src="" />
+      <div id="title-2" class="title">
         Ende
       </div>
     </div>
