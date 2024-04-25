@@ -3,21 +3,40 @@ import os
 from fileHelper import create_directory_if_not_exists, copy_file
 
 from PIL import Image, IptcImagePlugin
+
 from PySide6.QtWidgets import QFileDialog
 
 
-def readImageTitle(path):
+def readImageTitle(path) -> str:
     img = Image.open(path)
-    # Nikon Software writes title in IPTC
     iptc = IptcImagePlugin.getiptcinfo(img)
-    if iptc:
-        return iptc.get((2, 120)).decode("cp1252")
 
-    # Windows Explorer writes title in EXIF
+    if iptc:
+        # for k, v in iptc.items():
+        #     print(f"{k}:{v.decode()}")
+        # Gimp writes Documenttitle here
+        if iptc.get((2, 5)):
+            return  iptc.get((2, 5)).decode("utf-8")
+
+        # Nikon Software writes title here
+        if iptc and iptc.get((2, 120)):
+            return iptc.get((2, 120)).decode("cp1252")
+
     exif_data = img._getexif()
     if exif_data:
-        return exif_data.get(270)
+        # for key, val in exif_data.items():
+        #     if isinstance(val, bytes):
+        #         val = val.decode("cp1252")
+        #     if key in ExifTags.TAGS:
+        #         print(f'{ExifTags.TAGS[key]}:{key}:{val}')
+        #     else:
+        #         print(f'{key}:{val}')
 
+        # Windows Explorer writes title in EXIF
+        if exif_data.get(40091):
+            return exif_data.get(40091).decode("utf-16")
+    
+    return ""
 
 def createFileList(parent):
     fileNames = QFileDialog.getOpenFileNames(
@@ -39,6 +58,7 @@ def createFileList(parent):
 
     for fileName in fileNames:
         title = readImageTitle(fileName)
+
         if title == lastTitle:
             title = None
         else:

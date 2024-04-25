@@ -1,4 +1,6 @@
 __pycache__/**
+.venv/**
+deployment/**
 fileList.js
 player/data
 
