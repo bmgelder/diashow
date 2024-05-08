@@ -53,6 +53,14 @@ class MainWindow(QMainWindow):
         self.edit_title_action.triggered.connect(self.editTitle)
         self.edit_title_action.setDisabled(True)
 
+        # Action toggle chapter
+        self.toggle_chapter_action = QAction(
+            QIcon("icons8-bookmark-32.png"), "Kapitel", self)
+        self.toggle_chapter_action.setToolTip(
+            "Kapitel Kenzeichen hinzufügen oder löschen")
+        self.toggle_chapter_action.triggered.connect(self.toggleChapter)
+        self.toggle_chapter_action.setDisabled(True)
+
         # Action save
         self.save_action = QAction(
             QIcon("disc.png"), "Speichern", self)
@@ -84,6 +92,7 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
         toolbar.addAction(self.add_image_action)
         toolbar.addAction(self.edit_title_action)
+        toolbar.addAction(self.toggle_chapter_action)
         toolbar.addAction(self.save_action)
 
         self.statusBar = QStatusBar(self)
@@ -159,11 +168,23 @@ class MainWindow(QMainWindow):
         if editDlg.exec() == 1:
             newTitle = editDlg.textValue()
             self.controlData["fileList"][self.atImage - 1]["title"] = newTitle
-            self.scrollArea.updateTitle(self.atImage, newTitle)
+            self.scrollArea.updateTitle(self.atImage - 1, newTitle)
             self.setWindowModified(True)
             self.save_action.setEnabled(True)
             self.statusBar.showMessage(
                 f"Titel geändert: {newTitle}")
+
+    def toggleChapter(self):
+        if "chapter" not in self.controlData["fileList"][self.atImage - 1]:
+            self.controlData["fileList"][self.atImage - 1]["chapter"] = True
+            self.scrollArea.toggleChapter(self.atImage - 1)
+        else:
+            del self.controlData["fileList"][self.atImage - 1]["chapter"]
+            self.scrollArea.toggleChapter(self.atImage - 1)
+        self.setWindowModified(True)
+        self.save_action.setEnabled(True)
+        self.statusBar.showMessage(
+            f"Kapitel geändert")
 
     def saveControlFile(self):
         saveControlFile(self.controlFilename, self.controlData)

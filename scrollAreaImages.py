@@ -14,4 +14,7 @@ class ScrollAreaImages(QScrollArea):
 
     def updateTitle(self, atItem, newTitle):
         self.imagesList.updateTitle(atItem, newTitle)
+
+    def toggleChapter(self, atItem):
+        self.imagesList.toggleChapter(atItem)
 # End of ScrollAreaImages

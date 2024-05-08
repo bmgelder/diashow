@@ -81,7 +81,6 @@
       document.getElementById(slide).style.opacity = 0;
     }
     function chgImgSrc(idIdx, idx) {
-      console.log('chgImgSrc:', idIdx, idx);
       if (typeof data.fileList[idx] === 'undefined') {
         return;
       }
@@ -157,6 +156,21 @@
       if (lockImgChg) {
         return;
       }
+      if (event.shiftKey) {
+        if (autoChangeInterval) {
+          return;
+        }
+        if (event.key === 'ArrowLeft') {
+          prevChapter();
+          return;
+        }
+        if (event.key === 'ArrowRight') {
+          nextCapter();
+          return;
+        }
+        //ignore other shift key events
+        return;
+      }
       switch (event.key) {
         case "ArrowLeft":
           if (autoChangeInterval) {
@@ -172,6 +186,10 @@
           } else {
             startAutoChange();
           }
+          break;
+        case "ArrowDown":
+          // jump to first image
+          showFirstImage();
           break;
         case "ArrowRight":
           if (autoChangeInterval) {
@@ -190,7 +208,6 @@
     function chgImage(step) {
       const nxtIdx = ((slideIdx + step) % 3 + 3) % 3;
       const nxtNxtIdx = ((nxtIdx + step) % 3 + 3) % 3;
-      console.log('currIdx:', currIdx, 'nxtIdx:', nxtIdx, 'nxtNxtIdx:', nxtNxtIdx);
       chgImgSrc(nxtNxtIdx, currIdx + step);
       hideSlide('slide-' + slideIdx);
       showSlide('slide-' + nxtIdx);
@@ -202,8 +219,6 @@
         lockImgChange();
         currIdx++;
         chgImage(1);
-      } else if (autoChangeInterval) {
-        stopAutoChange();
       }
     }
     function prevImage() {
@@ -211,6 +226,63 @@
         lockImgChange();
         currIdx--;
         chgImage(-1);
+      }
+    }
+    function showFirstImage() {
+      if (autoChangeInterval) {
+        stopAutoChange();
+      }
+      hideSlide('slide-' + slideIdx);
+      slideIdx = 0;
+      currIdx = 0;
+      loadImage();
+    }
+    function prevChapter() {
+      if (currIdx > 0) {
+        lockImgChange();
+        hideSlide('slide-' + slideIdx);
+        for (let i = currIdx - 1; i >= 0; i--) {
+          if (data.fileList[i].chapter || i === 0) {
+            currIdx = i;
+            slideIdx = 0;
+            chgImgSrc(0, currIdx);
+            showSlide('slide-0');
+            // Some time for the bnrowser to render the image
+            setTimeout(() => {
+              if (currIdx < data.fileList.length - 1) {
+                chgImgSrc(1, currIdx + 1);
+              }
+              if (currIdx > 0) {
+                chgImgSrc(2, currIdx - 1);
+              }
+            }, 1000);
+            break;
+          }
+        }
+      }
+    }
+    function nextCapter() {
+      if (currIdx < data.fileList.length - 1) {
+        lockImgChange();
+        hideSlide('slide-' + slideIdx);
+        for (let i = currIdx + 1; i < data.fileList.length; i++) {
+          if (data.fileList[i].chapter || i === data.fileList.length - 1) {
+            currIdx = i;
+            slideIdx = 0;
+            chgImgSrc(0, currIdx);
+            showSlide('slide-0');
+            // Some time for the bnrowser to render the image
+            setTimeout(() => {
+              if (currIdx < data.fileList.length - 1) {
+                chgImgSrc(1, currIdx + 1);
+              }
+              if (currIdx > 0) {
+                chgImgSrc(2, currIdx - 1);
+              }
+            }, 1000);
+            break;
+          }
+        }
       }
     }
     function lockImgChange() {
@@ -221,7 +293,7 @@
         lockImgChg = false;
         // Remove the class to change the cursor back
         document.body.classList.remove('busy-cursor');
-      }, 1500);
+      }, 1000);
     }
     function startAutoChange() {
       // Add the class to change the cursor
@@ -230,7 +302,7 @@
       chgImage(1)
       // Change image every 4 seconds
       autoChangeInterval = setInterval(
-        function() {
+        function () {
           if (currIdx < data.fileList.length - 1) {
             currIdx++;
             chgImage(1);

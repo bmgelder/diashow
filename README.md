@@ -14,6 +14,11 @@ Back: right mouse button or left arrow key
 
 Toggle Autoplay: Middle mouse button or up arrow key
 
+Jump to Start: Down arrow key
+
+Jump to previous chapter shift+left arrow keyy
+
+Jump to next chapter shift+right arrow key
 The autoplay is set to 4 seconds. You can change the time span with a test editor. Search for 4000 in index.html and enter the desired ms.
 
 The control file is generated with a Python/QT (pyside6) app. Jou need to install pyside6, json5, pillow

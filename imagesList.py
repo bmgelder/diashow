@@ -32,6 +32,7 @@ class ClickableWidget(QWidget):
                 self.mainWindow.atImage = len(
                     self.mainWindow.controlData["fileList"]) + 1
                 self.mainWindow.edit_title_action.setDisabled(True)
+                self.mainWindow.toggle_chapter_action.setDisabled(True)
                 self.setPalette(palette)
                 return
 
@@ -39,6 +40,7 @@ class ClickableWidget(QWidget):
             palette.setColor(self.backgroundRole(),
                              QColor(QColorConstants.LightGray))
             self.mainWindow.edit_title_action.setEnabled(True)
+            self.mainWindow.toggle_chapter_action.setEnabled(True)
             self.setPalette(palette)
 
             # Reset background color of the previous selected image if any
@@ -88,6 +90,10 @@ class ImagesList(QWidget):
         innerVerticalLayout.addWidget(sequenceNumberLabel)
         innerVerticalLayout.addWidget(filenameLabel)
         innerVerticalLayout.addWidget(titleLabel)
+        if 'chapter' in fileItem:
+            chapterLabel = QLabel("Kapitel")
+            innerVerticalLayout.addWidget(chapterLabel)
+
         innerVerticalLayout.addStretch()
 
         # Add the inner layout to the horizontal layout
@@ -138,7 +144,16 @@ class ImagesList(QWidget):
             QApplication.processEvents()
 
     def updateTitle(self, atItem, newTitle):
-        self.verticalLayout.itemAt(atItem - 1).layout().itemAt(
+        self.verticalLayout.itemAt(atItem).layout().itemAt(
             0).widget().layout().itemAt(0).layout().itemAt(2).widget().setText(newTitle)
 
+    def toggleChapter(self, atItem):
+        innerVerticalLayout = self.verticalLayout.itemAt(atItem).layout().itemAt(
+            0).widget().layout().itemAt(0).layout()
+
+        if (innerVerticalLayout.count() == 5):
+            innerVerticalLayout.itemAt(3).widget().deleteLater()
+        else:
+            chapterLabel = QLabel("Kapitel")
+            innerVerticalLayout.insertWidget(3, chapterLabel)
 # End of ImagesList
