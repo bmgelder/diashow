@@ -2,40 +2,52 @@ import os
 
 from fileHelper import create_directory_if_not_exists, copy_file
 
-from PIL import Image, IptcImagePlugin
+from PIL import Image, IptcImagePlugin, ExifTags
+from iptcinfo3 import IPTCInfo
 
 from PySide6.QtWidgets import QFileDialog
 
 
 def readImageTitle(path) -> str:
-    img = Image.open(path)
-    iptc = IptcImagePlugin.getiptcinfo(img)
+    with Image.open(path) as img:
+        iptc = IptcImagePlugin.getiptcinfo(img)
 
-    if iptc:
-        # for k, v in iptc.items():
-        #     print(f"{k}:{v.decode()}")
-        # Gimp writes Documenttitle here
-        if iptc.get((2, 5)):
-            return  iptc.get((2, 5)).decode("utf-8")
+        if iptc:
+            # print('iptc found')
+            # for k, v in iptc.items():
+            #     print(f"{k}:{v.decode()}")
 
-        # Nikon Software writes title here
-        if iptc and iptc.get((2, 120)):
-            return iptc.get((2, 120)).decode("cp1252")
+            # Gimp writes Documenttitle here
+            if iptc.get((2, 5)):
+                return  iptc.get((2, 5)).decode("utf-8")
 
-    exif_data = img._getexif()
-    if exif_data:
-        # for key, val in exif_data.items():
-        #     if isinstance(val, bytes):
-        #         val = val.decode("cp1252")
-        #     if key in ExifTags.TAGS:
-        #         print(f'{ExifTags.TAGS[key]}:{key}:{val}')
-        #     else:
-        #         print(f'{key}:{val}')
+            # Nikon Software writes title here
+            if iptc and iptc.get((2, 120)):
+                return iptc.get((2, 120)).decode("cp1252")
+        
+        exif_data = img._getexif()
+        if exif_data:
+            # print('exif found')
+            # for key, val in exif_data.items():
+            #     #if isinstance(val, bytes):
+            #         #val = val.decode()
+            #     if key in ExifTags.TAGS:
+            #         print(f'{ExifTags.TAGS[key]}:{key}:{val}')
+            #     else:
+            #         print(f'{key}:{val}')
 
-        # Windows Explorer writes title in EXIF
-        if exif_data.get(40091):
-            return exif_data.get(40091).decode("utf-16")
-    
+            # Windows Explorer writes title in EXIF
+            if exif_data.get(40091):
+                return exif_data.get(40091).decode("utf-16")
+
+        # Last try XMP
+        xmp =img.getxmp()
+        if xmp:
+            try:
+                return xmp["xmpmeta"]["RDF"]["Description"]["title"]["Alt"]["li"]["text"]
+            except (KeyError, TypeError):
+                pass
+
     return ""
 
 def createFileList(parent):
