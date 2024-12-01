@@ -19,12 +19,12 @@ def readImageTitle(path) -> str:
 
             # Gimp writes Documenttitle here
             if iptc.get((2, 5)):
-                return  iptc.get((2, 5)).decode("utf-8")
+                return iptc.get((2, 5)).decode("utf-8")
 
             # Nikon Software writes title here
             if iptc and iptc.get((2, 120)):
                 return iptc.get((2, 120)).decode("cp1252")
-        
+
         exif_data = img._getexif()
         if exif_data:
             # print('exif found')
@@ -41,7 +41,7 @@ def readImageTitle(path) -> str:
                 return exif_data.get(40091).decode("utf-16")
 
         # Last try XMP
-        xmp =img.getxmp()
+        xmp = img.getxmp()
         if xmp:
             try:
                 return xmp["xmpmeta"]["RDF"]["Description"]["title"]["Alt"]["li"]["text"]
@@ -49,6 +49,7 @@ def readImageTitle(path) -> str:
                 pass
 
     return ""
+
 
 def createFileList(parent):
     fileNames = QFileDialog.getOpenFileNames(

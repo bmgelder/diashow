@@ -19,15 +19,21 @@ Jump to Start: Down arrow key
 Jump to previous chapter shift+left arrow keyy
 
 Jump to next chapter shift+right arrow key
-The autoplay is set to 4 seconds. You can change the time span with a test editor. Search for 4000 in index.html and enter the desired ms.
+The autoplay time span is set to 4 seconds. You can change the time span with a test editor. Search for 4000 in index.html and enter the desired ms.
+
+The start script is diashow.py. First action is to select a directory with the player. Then you can add images (individually or as a list). If an image is selected in the image list, images are inserted first. Otherwise pictures will be added at the end.
+
+If an image is selected, you can edit the title or set the chapter flag.
+
+The background music (mp3) may be added with the Music tab.
 
 The control file is generated with a Python/QT (pyside6) app. Jou need to install pyside6, json5, pillow
 
 Some icons by https://p.yusukekamiyamane.com/. Licensed under a Creative Commons Attribution 3.0 licence.
 Some Icons by https://icons8.de/
 
-The start script is diashow.py. First select a directory with the player. Then you can add images (individually or as a list). If an image is selected in the image list, images are inserted first. Otherwise pictures will be added at the end.
+The Windows EXE (see directory windows) is built PyInstaller. PyInstaller adds all modules of Python into the EXE. To avoid a huge EXE use a virtual environment (see requiremnets.txt).
 
-If an image is selected, you can edit the title.
+The command t0 issue PyInstaller:
+...\diashow>pyinstaller diashow.py --onefile --add-data "*.png;." --icon="icons8-präsentation-100.png" --noconfirm
 
-The background music (mp3) is selected with the Musik tab.

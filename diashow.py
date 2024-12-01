@@ -2,6 +2,7 @@
 import sys
 import os
 
+from aboutDialog import AboutDialog
 from controlFile import openCreateControlFile, saveControlFile
 from images import createFileList
 from scrollAreaImages import ScrollAreaImages
@@ -14,8 +15,8 @@ from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QInputDialog,
+    QMessageBox,
     QTabWidget,
-    QWidget,
     QFileDialog,
     QStatusBar,
     QLabel,
@@ -38,16 +39,22 @@ class MainWindow(QMainWindow):
 
         self.resize(900, rect.height() - (titleBarHeight * 2))
 
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS + "\\"
+        except Exception:
+            base_path = os.path.abspath(".") + "\\"
+ 
         # Action add images
         self.add_image_action = QAction(
-            QIcon("plus.png"), "Bilder hinzufügen", self)
+            QIcon(base_path + "plus.png"), "Bilder hinzufügen", self)
         self.add_image_action.setToolTip(
             "Bilder für Diashow hinzufügen")
         self.add_image_action.triggered.connect(self.add)
 
         # Action edit title
         self.edit_title_action = QAction(
-            QIcon("icons8-bearbeiten-30.png"), "Titel ändern", self)
+            QIcon(base_path + "icons8-bearbeiten-30.png"), "Titel ändern", self)
         self.edit_title_action.setToolTip(
             "Titel des Bildes ändern")
         self.edit_title_action.triggered.connect(self.editTitle)
@@ -55,7 +62,7 @@ class MainWindow(QMainWindow):
 
         # Action toggle chapter
         self.toggle_chapter_action = QAction(
-            QIcon("icons8-bookmark-32.png"), "Kapitel", self)
+            QIcon(base_path + "icons8-bookmark-32.png"), "Kapitel", self)
         self.toggle_chapter_action.setToolTip(
             "Kapitel Kenzeichen hinzufügen oder löschen")
         self.toggle_chapter_action.triggered.connect(self.toggleChapter)
@@ -63,10 +70,16 @@ class MainWindow(QMainWindow):
 
         # Action save
         self.save_action = QAction(
-            QIcon("disc.png"), "Speichern", self)
+            QIcon(base_path + "disc.png"), "Speichern", self)
         self.save_action.setToolTip("Steuerdatei speichern")
         self.save_action.triggered.connect(self.saveControlFile)
         self.save_action.setDisabled(True)
+
+        # Action about dialog
+        self.about_action = QAction(
+            QIcon(base_path + "question.png"), "Info", self)
+        self.about_action.setToolTip("Informationen über diese Anwendung")
+        self.about_action.triggered.connect(self.showAboutDialog)
 
         self.atImage = 1
         self.active_folder = os.getcwd()
@@ -79,7 +92,7 @@ class MainWindow(QMainWindow):
             sys.exit()
 
         self.active_folder = dirName
-        os.chdir(dirName)   # Be careful: Icon files are not longer found
+        os.chdir(dirName)   # Be careful: Icon files are not longer on wd
 
         self.isInit = True
         self.controlFilename = dirName + "/fileList.js"
@@ -94,6 +107,7 @@ class MainWindow(QMainWindow):
         toolbar.addAction(self.edit_title_action)
         toolbar.addAction(self.toggle_chapter_action)
         toolbar.addAction(self.save_action)
+        toolbar.addAction(self.about_action)
 
         self.statusBar = QStatusBar(self)
         self.image_count_label = QLabel("Anzahl Bilder: 0")
@@ -216,6 +230,10 @@ class MainWindow(QMainWindow):
                 event.ignore()
         else:
             event.accept()
+
+    def showAboutDialog(self):
+        dialog =AboutDialog(self)
+        dialog.exec()
 
 
 # Create an application
