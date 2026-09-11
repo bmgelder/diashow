@@ -27,7 +27,7 @@ def readImageTitle(path) -> str:
 
         exif_data = img._getexif()
         if exif_data:
-            # print('exif found')
+            #print('exif found')
             # for key, val in exif_data.items():
             #     #if isinstance(val, bytes):
             #         #val = val.decode()
@@ -35,8 +35,18 @@ def readImageTitle(path) -> str:
             #         print(f'{ExifTags.TAGS[key]}:{key}:{val}')
             #     else:
             #         print(f'{key}:{val}')
-
-            # Windows Explorer writes title in EXIF
+            # IRFAN writes title in EXIF key 270
+            if exif_data.get(270):
+                exif_val = exif_data.get(270)
+                try:
+                    # Fixes UTF-8 strings that were incorrectly parsed as
+                    # Latin-1
+                    exif_val = exif_val.encode('latin-1').decode('utf-8')
+                except (UnicodeDecodeError, AttributeError):
+                    # If it wasn't a UTF-8 error, keep the original value
+                    pass
+                return exif_val
+            # Windows Explorer writes title in EXIF bytes
             if exif_data.get(40091):
                 return exif_data.get(40091).decode("utf-16")
 
